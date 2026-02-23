@@ -1,0 +1,78 @@
+<<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nino Club</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header id="header">
+  <div class="logo">Nino Club</div>
+  <nav id="nav">
+    <ul>
+      <li><a href="#home">Início</a></li>
+      <li><a href="#sobre">Sobre</a></li>
+      <li><a href="#atracoes">Atrações</a></li>
+      <li><a href="#galeria">Galeria</a></li>
+      <li><a href="#contato">Contato</a></li>
+    </ul>
+  </nav>
+  <div class="menu-toggle" id="menu-toggle">☰</div>
+</header>
+
+<section class="hero" id="home">
+  <div class="overlay"></div>
+  <div class="hero-content">
+    <h1>BEM VINDOS AO <span>NINO CLUB</span></h1>
+    <p>Está procurando um lugar para descansar e curtir momentos especiais?
+      Venha aproveitar dias incríveis com piscina refrescante e ambiente perfeito para família e amigos.</p>
+    <button id="exploreBtn">EXPLORE</button>
+  </div>
+</section>
+
+<section class="atracoes" id="atracoes">
+  <h2>Nossas Atrações</h2>
+  <div class="cards">
+    <div class="card">Piscina</div>
+    <div class="card">Salão de Festas</div>
+    <div class="card">Área Kids</div>
+    <div class="card">Espaço Gourmet</div>
+  </div>
+</section>
+
+<section class="galeria" id="galeria">
+  <h2>Galeria</h2>
+  <div class="grid">
+    <img src="https://picsum.photos/300?1">
+    <img src="https://picsum.photos/300?2">
+    <img src="https://picsum.photos/300?3">
+    <img src="https://picsum.photos/300?4">
+    <img src="https://picsum.photos/300?5">
+    <img src="https://picsum.photos/300?6">
+  </div>
+</section>
+
+<section class="contato" id="contato">
+  <h2>Agendamento</h2>
+  <form id="form">
+    <input type="text" id="nome" placeholder="Seu nome">
+    <input type="email" id="email" placeholder="Seu email">
+    <input type="date" id="data">
+    <input type="number" id="pessoas" placeholder="Número de pessoas">
+    <button type="submit">Reservar</button>
+    <p id="mensagem"></p>
+  </form>
+</section>
+
+<div class="lightbox" id="lightbox">
+  <img id="lightbox-img">
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
+
+#Esse prompt é apenas o prototipo do front do site, irá ter atualizações futuras.
