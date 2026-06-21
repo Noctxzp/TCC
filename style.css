@@ -1,14 +1,12 @@
-/* ─── Variáveis de Cores (Inspiradas no Nino Clube) ─── */
 :root {
-    --cor-fundo-profundo: #161515; /* Cinza quase preto do fundo */
-    --cor-fundo-card: #221F1F;     /* Cinza dos cards e seções alternadas */
-    --cor-azul-logo: #1A8CD8;      /* Azul vibrante principal */
-    --cor-verde-tropical: #1E934C; /* Verde da palmeira */
-    --cor-texto-claro: #FFFFFF;    /* Textos principais */
-    --cor-texto-mutado: #A0A0A0;   /* Textos secundários e descrições */
+    --cor-fundo-profundo: #0a0a0c; 
+    --cor-fundo-card: #141419;     
+    --cor-azul-logo: #00a2ff;      
+    --cor-verde-tropical: #00e676; 
+    --cor-texto-claro: #ffffff;    
+    --cor-texto-mutado: #7e8299;   
 }
 
-/* ─── Reset ─── */
 * {
     margin: 0;
     padding: 0;
@@ -22,7 +20,6 @@ body {
     font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
 }
 
-/* ─── Efeito de Imagem de Fundo Transparente ─── */
 body::before {
     content: "";
     position: fixed;
@@ -30,29 +27,29 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    /* Corrigido: adicionado o "url()" envolta do link */
-    background-image: url('Nino-Clube.jpg'); 
+    
+    background-image: url('nino-capa-rivieira.jpeg'); 
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    opacity: 0.30; 
+    opacity: 0.20;
     z-index: -1;   
 }
 
-/* ─── Navbar ─── */
+
 .navbar {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 64px;
-    background-color: rgba(22, 21, 21, 0.95);
+    background-color: rgba(10, 10, 12, 0.9); 
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
     border-bottom: 2px solid var(--cor-azul-logo);
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(8px);
 }
 
 .navbar a {
@@ -78,7 +75,6 @@ body::before {
     transform: translateY(-1px);
 }
 
-/* ─── Hero / Vitrine ─── */
 .hero-container {
     min-height: 100vh;
     display: flex;
@@ -87,7 +83,7 @@ body::before {
     align-items: center;
     padding-top: 100px;
     padding-bottom: 60px;
-    background: linear-gradient(180deg, rgba(26, 140, 216, 0.08) 0%, rgba(22, 21, 21, 0) 100%);
+    background: linear-gradient(180deg, rgba(0, 162, 255, 0.08) 0%, rgba(10, 10, 12, 0) 100%);
 }
 
 .hero-title {
@@ -108,7 +104,6 @@ body::before {
     color: var(--cor-texto-mutado);
 }
 
-/* ─── Vitrine ─── */
 .vitrine-aluguel {
     display: flex;
     gap: 50px;
@@ -117,22 +112,23 @@ body::before {
     flex-wrap: wrap;
 }
 
-/* ─── Card de Itens ─── */
 .item-card {
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    background: var(--cor-fundo-card);
+    background: rgba(20, 20, 25, 0.85); 
+    backdrop-filter: blur(10px);        
     padding: 24px;
     border-radius: 24px;
     border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: transform 0.3s, border-color 0.3s;
+    transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
 }
 
 .item-card:hover {
     transform: translateY(-5px);
     border-color: var(--cor-azul-logo);
+    box-shadow: 0 10px 30px rgba(0, 162, 255, 0.25); /* Sombra neon */
 }
 
 .card-img {
@@ -140,7 +136,7 @@ body::before {
     height: 240px;
     border-radius: 16px;
     object-fit: cover;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
     background-color: #1d2b36;
 }
 
@@ -174,11 +170,11 @@ body::before {
 
 .btn-alugar:hover {
     background-color: var(--cor-verde-tropical);
+    color: #000; 
     transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(30, 147, 76, 0.4);
+    box-shadow: 0 6px 15px rgba(0, 230, 118, 0.4);
 }
 
-/* ─── Seções Genéricas ─── */
 section {
     padding: 100px 24px;
     min-height: 60vh;
@@ -190,7 +186,7 @@ section {
 }
 
 section:nth-of-type(even) {
-    background-color: rgba(34, 31, 31, 0.65);
+    background-color: rgba(20, 20, 25, 0.65); 
 }
 
 section h2 {
@@ -215,7 +211,6 @@ section p {
     font-size: 1rem;
 }
 
-/* ─── Seção de Serviços ─── */
 .servicos-grid {
     display: flex;
     gap: 24px;
@@ -226,7 +221,8 @@ section p {
 }
 
 .servico-item {
-    background: var(--cor-fundo-profundo);
+    background: rgba(10, 10, 12, 0.8); 
+    backdrop-filter: blur(5px);
     border: 1px solid rgba(255, 255, 255, 0.03);
     border-radius: 20px;
     padding: 32px 24px 28px;
@@ -240,7 +236,7 @@ section p {
 
 .servico-item:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 28px rgba(0,0,0,0.4);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.6);
 }
 
 .servico-item i {
@@ -265,16 +261,16 @@ section p {
     line-height: 1.5;
 }
 
-/* ─── Agendamento ─── */
 .agendamento-card {
     margin-top: 40px;
-    background: var(--cor-fundo-profundo);
+    background: rgba(20, 20, 25, 0.85); 
+    backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 28px;
     padding: 40px 36px;
     width: 100%;
     max-width: 460px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
 }
 
 .cal-header {
@@ -337,7 +333,7 @@ section p {
 }
 
 .cal-days .day:hover { 
-    background: rgba(30, 147, 76, 0.2); 
+    background: rgba(0, 230, 118, 0.2); 
     color: #fff;
 }
 
@@ -349,12 +345,12 @@ section p {
 
 .cal-days .day.selected {
     background: var(--cor-azul-logo);
-    color: #fff;
+    color: #000;
     font-weight: 700;
 }
 
 .cal-days .day.past {
-    color: #444;
+    color: #333;
     cursor: not-allowed;
 }
 
@@ -369,7 +365,6 @@ section p {
     margin: 24px 0 20px;
 }
 
-/* Formulário de Agendamento */
 .form-agendamento {
     display: flex;
     flex-direction: column;
@@ -383,7 +378,7 @@ section p {
     border-radius: 12px;
     font-size: 0.95rem;
     color: #fff;
-    background: var(--cor-fundo-card);
+    background: var(--cor-fundo-profundo);
     outline: none;
     transition: border-color 0.2s;
 }
@@ -401,7 +396,7 @@ section p {
     margin-top: 6px;
     padding: 15px;
     background-color: var(--cor-verde-tropical);
-    color: #fff;
+    color: #000;
     border: none;
     border-radius: 14px;
     font-size: 1rem;
@@ -413,9 +408,9 @@ section p {
 }
 
 .btn-reserva:hover {
-    background-color: #24b55e;
+    background-color: #33ff99;
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(30, 147, 76, 0.4);
+    box-shadow: 0 6px 20px rgba(0, 230, 118, 0.4);
 }
 
 .data-selecionada {
@@ -426,19 +421,19 @@ section p {
     margin-bottom: 8px;
 }
 
-/* ─── Local ─── */
 .mapa-placeholder {
     margin-top: 32px;
     width: 100%;
     max-width: 600px;
     height: 260px;
-    background: var(--cor-fundo-card);
+    background: rgba(20, 20, 25, 0.8);
+    backdrop-filter: blur(5px);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--cor-texto-mutated);
+    color: var(--cor-texto-mutado);
     font-size: 0.95rem;
     gap: 8px;
 }
@@ -447,10 +442,9 @@ section p {
     color: var(--cor-azul-logo);
 }
 
-/* ─── Footer ─── */
 footer {
-    background: #0F0E0E;
-    color: var(--cor-texto-mutated);
+    background: #050506; 
+    color: var(--cor-texto-mutado);
     text-align: center;
     padding: 35px 20px;
     font-size: 0.85rem;
@@ -458,7 +452,6 @@ footer {
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* ─── Responsivo ─── */
 @media (max-width: 640px) {
     .navbar a { margin: 0 10px; font-size: 11px; gap: 4px; }
     .hero-title { font-size: 2rem; }
