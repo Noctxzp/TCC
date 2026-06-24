@@ -1,0 +1,16 @@
+{
+  "name": "cadastro-usuarios",
+  "version": "1.0.0",
+  "description": "Primeira parte do cadastro de usuarios do node express",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Anthony Rosembauer",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
