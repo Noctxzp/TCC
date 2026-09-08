@@ -22,14 +22,14 @@
 
         <div class="vitrine-aluguel">
             <div class="item-card">
-                <img src="Nino Clube.jpg" alt="Chácara Riveira" class="card-img">
+                <img src="https://i.postimg.cc/nVR4WxVh/nino-capa-rivieira.jpg" alt="Chácara Riveira" class="card-img">
                 <span class="card-label">Chácara Riveira</span>
                 <span class="card-desc">Disponível para locação diária e eventos</span>
                 <a href="#agendamento" class="btn-alugar">Alugar</a>
             </div>
 
             <div class="item-card">
-                <img src="Vila Gilda.jpeg" alt="Vila Gilda" class="card-img">
+                <img src="https://i.postimg.cc/BZgYQRSL/Vila-Gilda.jpg" alt="Vila Gilda" class="card-img">
                 <span class="card-label">Vila Gilda</span>
                 <span class="card-desc">Disponível para locação diária e eventos</span>
                 <a href="#agendamento" class="btn-alugar">Alugar</a>
@@ -91,10 +91,10 @@
             <div class="form-agendamento">
                 <input type="text" id="f-nome" placeholder="Seu nome completo">
                 <input type="tel" id="f-tel" placeholder="Telefone / WhatsApp">
-                <select id="f-item">
+                <select: id="f-item">
                     <option value="" disabled selected>Selecione o espaço</option>
-                    <option value="Chácara Principal">Chácara Rivieria</option>
-                    <option value="Espaço Lounge">Vila Gilda</option>
+                    <option value="Chácara Principal">Chácara Principal</option>
+                    <option value="Espaço Lounge">Espaço Lounge</option>
                 </select>
                 <button class="btn-reserva" type="button" onclick="solicitarReserva()">Solicitar Reserva</button>
             </div>
@@ -149,7 +149,7 @@
                 selectedDate = date;
                 const opts = { weekday:'long', day:'numeric', month:'long', year:'numeric' };
                 document.getElementById('data-selecionada').textContent =
-                    '📅 ' + date.toLocaleDateString('pt-BR', opts);
+                     + date.toLocaleDateString('pt-BR', opts);
                 render();
             }
 
