@@ -29,7 +29,7 @@
             </div>
 
             <div class="item-card">
-                <img src="https://i.postimg.cc/BZgYQRSL/Vila-Gilda.jpg" alt="Vila Gilda" class="card-img">
+                <img src="https://i.postimg.cc/BZgYQRSL/Vila%20Gilda.jpg" alt="Vila Gilda" class="card-img">
                 <span class="card-label">Vila Gilda</span>
                 <span class="card-desc">Disponível para locação diária e eventos</span>
                 <a href="#agendamento" class="btn-alugar">Alugar</a>
@@ -43,7 +43,7 @@
     </section>
 
     <section id="servicos">
-        <h2><i class="fas fa-palm-tree"></i> O que o Clube Oferece</h2>
+        <h2><i class="fas fa-tree"></i> O que o Clube Oferece</h2>
         <p>Um espaço completo e planejado para o seu total conforto, diversão e descanso.</p>
         <div class="servicos-grid">
             <div class="servico-item">
@@ -75,9 +75,9 @@
 
         <div class="agendamento-card">
             <div class="cal-header">
-                <button class="cal-nav" id="cal-prev">&#8249;</button>
+                <button class="cal-nav" id="cal-prev" type="button">&#8249;</button>
                 <span class="cal-month" id="cal-month-label"></span>
-                <button class="cal-nav" id="cal-next">&#8250;</button>
+                <button class="cal-nav" id="cal-next" type="button">&#8250;</button>
             </div>
             <div class="cal-weekdays">
                 <span>Dom</span><span>Seg</span><span>Ter</span>
@@ -91,22 +91,57 @@
             <div class="form-agendamento">
                 <input type="text" id="f-nome" placeholder="Seu nome completo">
                 <input type="tel" id="f-tel" placeholder="Telefone / WhatsApp">
-                <select: id="f-item">
+                <select id="f-item">
                     <option value="" disabled selected>Selecione o espaço</option>
-                    <option value="Chácara Principal">Chácara Principal</option>
-                    <option value="Espaço Lounge">Espaço Lounge</option>
+                    <option value="Chácara Riveira">Chácara Riveira</option>
+                    <option value="Vila Gilda">Vila Gilda</option>
                 </select>
                 <button class="btn-reserva" type="button" onclick="solicitarReserva()">Solicitar Reserva</button>
+                <p class="msg-reserva" id="msg-reserva"></p>
             </div>
         </div>
     </section>
 
+    <section id="local">
+        <h2><i class="fas fa-map-marker-alt"></i> Localização</h2>
+        <p>Nosso clube fica em uma região de fácil acesso, perfeita para fugir do estresse do dia a dia sem complicações.</p>
+        <div class="mapa-placeholder">
+            <i class="fas fa-map-marked-alt"></i> Mapa interativo em breve
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Nino Clube. Todos os direitos reservados.</p>
+    </footer>
+
     <script>
-        (function() {
+        (function () {
+            const API = ['localhost', '127.0.0.1'].includes(location.hostname) ? 'http://localhost:3000' : 'https://COLOQUE-AQUI-O-ENDERECO-DA-API';
             const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
                             'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
             let current = new Date();
             let selectedDate = null;
+            let reservadas = new Set(); // datas (AAAA-MM-DD) já ocupadas no espaço escolhido
+
+            const selectItem = document.getElementById('f-item');
+            const msg = document.getElementById('msg-reserva');
+
+            // Converte Date para AAAA-MM-DD (horário local)
+            function iso(date) {
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                return date.getFullYear() + '-' + m + '-' + d;
+            }
+
+            function mostrarMsg(texto, tipo) {
+                msg.textContent = texto;
+                msg.className = 'msg-reserva ' + (tipo || '');
+            }
+
+            function limparDataSelecionada() {
+                selectedDate = null;
+                document.getElementById('data-selecionada').textContent = '';
+            }
 
             function render() {
                 const year = current.getFullYear();
@@ -120,7 +155,7 @@
                 const firstDay = new Date(year, month, 1).getDay();
                 const daysInMonth = new Date(year, month + 1, 0).getDate();
                 const today = new Date();
-                today.setHours(0,0,0,0);
+                today.setHours(0, 0, 0, 0);
 
                 for (let i = 0; i < firstDay; i++) {
                     const empty = document.createElement('div');
@@ -138,8 +173,14 @@
                         div.classList.add('past');
                     } else {
                         if (date.toDateString() === today.toDateString()) div.classList.add('today');
-                        if (selectedDate && date.toDateString() === selectedDate.toDateString()) div.classList.add('selected');
-                        div.addEventListener('click', () => selectDay(date));
+
+                        if (reservadas.has(iso(date))) {
+                            div.classList.add('reservado');
+                            div.title = 'Data indisponível neste espaço';
+                        } else {
+                            if (selectedDate && date.toDateString() === selectedDate.toDateString()) div.classList.add('selected');
+                            div.addEventListener('click', () => selectDay(date));
+                        }
                     }
                     grid.appendChild(div);
                 }
@@ -147,47 +188,93 @@
 
             function selectDay(date) {
                 selectedDate = date;
-                const opts = { weekday:'long', day:'numeric', month:'long', year:'numeric' };
+                const opts = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
                 document.getElementById('data-selecionada').textContent =
-                     + date.toLocaleDateString('pt-BR', opts);
+                    'Data selecionada: ' + date.toLocaleDateString('pt-BR', opts);
+                mostrarMsg('');
                 render();
             }
 
+            // Busca no servidor as datas já reservadas do espaço escolhido
+            async function carregarReservas() {
+                const espaco = selectItem.value;
+                reservadas = new Set();
+
+                if (espaco) {
+                    try {
+                        const resp = await fetch(API + '/reservas?espaco=' + encodeURIComponent(espaco));
+                        const lista = await resp.json();
+                        reservadas = new Set(lista.map(r => r.data));
+                    } catch (e) {
+                        mostrarMsg('Não foi possível carregar as datas reservadas. O servidor está ligado?', 'erro');
+                    }
+                }
+
+                // se a data escolhida acabou de ficar ocupada, desmarca
+                if (selectedDate && reservadas.has(iso(selectedDate))) limparDataSelecionada();
+                render();
+            }
+
+            selectItem.addEventListener('change', () => {
+                mostrarMsg('');
+                carregarReservas();
+            });
+
             document.getElementById('cal-prev').addEventListener('click', () => {
+                current.setDate(1);
                 current.setMonth(current.getMonth() - 1);
                 render();
             });
 
             document.getElementById('cal-next').addEventListener('click', () => {
+                current.setDate(1);
                 current.setMonth(current.getMonth() + 1);
                 render();
             });
 
             render();
 
-            window.solicitarReserva = function() {
+            window.solicitarReserva = async function () {
                 const nome = document.getElementById('f-nome').value.trim();
                 const tel  = document.getElementById('f-tel').value.trim();
-                const item = document.getElementById('f-item').value;
+                const item = selectItem.value;
+
                 if (!nome || !tel || !item || !selectedDate) {
-                    alert('Por favor, preencha todos os campos e selecione uma data no calendário.');
+                    mostrarMsg('Preencha todos os campos e selecione uma data no calendário.', 'erro');
                     return;
                 }
-                const dateStr = selectedDate.toLocaleDateString('pt-BR');
-                alert(`✅ Reserva solicitada!\n\nNome: ${nome}\nData: ${dateStr}\nEspaço: ${item}\n\nEntraremos em contato em breve!`);
+
+                const botao = document.querySelector('.btn-reserva');
+                botao.disabled = true;
+                mostrarMsg('Enviando...');
+
+                try {
+                    const resp = await fetch(API + '/reservas', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ nome: nome, telefone: tel, espaco: item, data: iso(selectedDate) })
+                    });
+                    const dados = await resp.json();
+
+                    if (!resp.ok) {
+                        mostrarMsg(dados.erro || 'Não foi possível concluir a reserva.', 'erro');
+                    } else {
+                        const dataTxt = selectedDate.toLocaleDateString('pt-BR');
+                        mostrarMsg('✅ Reserva solicitada para ' + dataTxt + ' (' + item + '). Entraremos em contato em breve!', 'ok');
+                        document.getElementById('f-nome').value = '';
+                        document.getElementById('f-tel').value = '';
+                        limparDataSelecionada();
+                    }
+                } catch (e) {
+                    mostrarMsg('Não foi possível falar com o servidor. Ele está ligado (npm run dev)?', 'erro');
+                } finally {
+                    botao.disabled = false;
+                }
+
+                carregarReservas(); // atualiza os dias ocupados
             };
         })();
     </script>
+</body>
+</html>
 
-    <section id="local">
-        <h2><i class="fas fa-map-marker-alt"></i> Localização</h2>
-        <p>Nosso clube fica em uma região de fácil acesso, perfeita para fugir do estresse do dia a dia sem complicações.</p>
-        <div class="mapa-placeholder">
-            <i class="fas fa-map-marked-alt"></i> Mapa interativo em breve
-        </div>
-    </section>
-
-    <footer>
-        <p>&copy; 2026 Nino Clube. Todos os direitos
-
-            
