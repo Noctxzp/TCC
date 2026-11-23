@@ -1,17 +1,20 @@
 :root {
-    --cor-fundo-profundo: #0a0a0c; 
-    --cor-fundo-card: #141419;     
-    --cor-azul-logo: #00a2ff;      
-    --cor-verde-tropical: #00e676; 
-    --cor-texto-claro: #ffffff;    
-    --cor-texto-mutado: #7e8299;   
+    --cor-fundo-profundo: #0a0a0c;
+    --cor-fundo-card: #141419;
+    --cor-azul-logo: #00a2ff;
+    --cor-verde-tropical: #00e676;
+    --cor-texto-claro: #ffffff;
+    --cor-texto-mutado: #7e8299;
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    scroll-behavior: smooth;
 }
 
 body {
@@ -27,15 +30,13 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    
-    background-image: url('nino-capa-rivieira.jpeg'); 
+    background-image: url('https://i.postimg.cc/nVR4WxVh/nino-capa-rivieira.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     opacity: 0.20;
-    z-index: -1;   
+    z-index: -1;
 }
-
 
 .navbar {
     position: fixed;
@@ -43,7 +44,7 @@ body::before {
     left: 0;
     width: 100%;
     height: 64px;
-    background-color: rgba(10, 10, 12, 0.9); 
+    background-color: rgba(10, 10, 12, 0.9);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -117,8 +118,8 @@ body::before {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    background: rgba(20, 20, 25, 0.85); 
-    backdrop-filter: blur(10px);        
+    background: rgba(20, 20, 25, 0.85);
+    backdrop-filter: blur(10px);
     padding: 24px;
     border-radius: 24px;
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -128,7 +129,7 @@ body::before {
 .item-card:hover {
     transform: translateY(-5px);
     border-color: var(--cor-azul-logo);
-    box-shadow: 0 10px 30px rgba(0, 162, 255, 0.25); /* Sombra neon */
+    box-shadow: 0 10px 30px rgba(0, 162, 255, 0.25);
 }
 
 .card-img {
@@ -170,7 +171,7 @@ body::before {
 
 .btn-alugar:hover {
     background-color: var(--cor-verde-tropical);
-    color: #000; 
+    color: #000;
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(0, 230, 118, 0.4);
 }
@@ -183,10 +184,11 @@ section {
     align-items: center;
     justify-content: center;
     text-align: center;
+    scroll-margin-top: 64px;
 }
 
 section:nth-of-type(even) {
-    background-color: rgba(20, 20, 25, 0.65); 
+    background-color: rgba(20, 20, 25, 0.65);
 }
 
 section h2 {
@@ -221,7 +223,7 @@ section p {
 }
 
 .servico-item {
-    background: rgba(10, 10, 12, 0.8); 
+    background: rgba(10, 10, 12, 0.8);
     backdrop-filter: blur(5px);
     border: 1px solid rgba(255, 255, 255, 0.03);
     border-radius: 20px;
@@ -263,7 +265,7 @@ section p {
 
 .agendamento-card {
     margin-top: 40px;
-    background: rgba(20, 20, 25, 0.85); 
+    background: rgba(20, 20, 25, 0.85);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 28px;
@@ -332,8 +334,8 @@ section p {
     transition: background 0.15s, color 0.15s;
 }
 
-.cal-days .day:hover { 
-    background: rgba(0, 230, 118, 0.2); 
+.cal-days .day:hover {
+    background: rgba(0, 230, 118, 0.2);
     color: #fff;
 }
 
@@ -355,7 +357,7 @@ section p {
 }
 
 .cal-days .day.past:hover { background: none; }
- 
+
 .cal-days .day.empty { cursor: default; }
 .cal-days .day.empty:hover { background: none; }
 
@@ -443,7 +445,7 @@ section p {
 }
 
 footer {
-    background: #050506; 
+    background: #050506;
     color: var(--cor-texto-mutado);
     text-align: center;
     padding: 35px 20px;
@@ -457,3 +459,28 @@ footer {
     .hero-title { font-size: 2rem; }
     .vitrine-aluguel { gap: 30px; }
 }
+
+/* Dias já reservados */
+.cal-days .day.reservado {
+    color: #ff5252;
+    text-decoration: line-through;
+    background: rgba(255, 82, 82, 0.08);
+    cursor: not-allowed;
+}
+
+.cal-days .day.reservado:hover {
+    background: rgba(255, 82, 82, 0.08);
+    color: #ff5252;
+}
+
+/* Mensagem abaixo do botão */
+.msg-reserva {
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    min-height: 1.2em;
+    margin-top: 4px;
+}
+
+.msg-reserva.ok { color: var(--cor-verde-tropical); }
+.msg-reserva.erro { color: #ff5252; }
