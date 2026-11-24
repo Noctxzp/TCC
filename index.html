@@ -98,6 +98,14 @@
                 </select>
                 <button class="btn-reserva" type="button" onclick="solicitarReserva()">Solicitar Reserva</button>
                 <p class="msg-reserva" id="msg-reserva"></p>
+                <div class="pagamento" id="pagamento" hidden>
+                    <h3>Pague para confirmar sua reserva</h3>
+                    <p class="pag-resumo" id="pag-resumo"></p>
+                    <img id="pag-qr" alt="QR Code Pix" width="220" height="220">
+                    <textarea id="pag-codigo" readonly rows="4"></textarea>
+                    <button type="button" id="pag-copiar" class="btn-copiar">Copiar código Pix</button>
+                    <p class="pag-aviso" id="pag-aviso"></p>
+                </div>
             </div>
         </div>
     </section>
@@ -246,6 +254,7 @@
 
                 const botao = document.querySelector('.btn-reserva');
                 botao.disabled = true;
+                document.getElementById('pagamento').hidden = true;
                 mostrarMsg('Enviando...');
 
                 try {
@@ -260,7 +269,23 @@
                         mostrarMsg(dados.erro || 'Não foi possível concluir a reserva.', 'erro');
                     } else {
                         const dataTxt = selectedDate.toLocaleDateString('pt-BR');
-                        mostrarMsg('✅ Reserva solicitada para ' + dataTxt + ' (' + item + '). Entraremos em contato em breve!', 'ok');
+                        const valorTxt = Number(dados.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                        const prazo = new Date(dados.expiraEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                        mostrarMsg('Reserva registrada! Falta o pagamento para confirmar.', 'ok');
+                        document.getElementById('pag-resumo').textContent = item + ' em ' + dataTxt + ' - ' + valorTxt;
+                        document.getElementById('pag-qr').src = dados.qrCode;
+                        document.getElementById('pag-codigo').value = dados.pixCopiaECola;
+                        document.getElementById('pag-aviso').textContent =
+                            'Pague até às ' + prazo + ' ou a data volta a ficar livre. Depois de pagar, envie o comprovante ao Nino Clube informando o código da reserva #' + dados.id + '. A reserva só é confirmada depois que o pagamento for conferido.';
+                        document.getElementById('pagamento').hidden = false;
+                        document.getElementById('pagamento').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        document.getElementById('pag-copiar').onclick = function () {
+                            const campo = document.getElementById('pag-codigo');
+                            campo.select();
+                            (navigator.clipboard ? navigator.clipboard.writeText(campo.value) : Promise.reject())
+                                .then(() => mostrarMsg('Código Pix copiado!', 'ok'))
+                                .catch(() => { document.execCommand('copy'); });
+                        };
                         document.getElementById('f-nome').value = '';
                         document.getElementById('f-tel').value = '';
                         limparDataSelecionada();
