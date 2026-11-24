@@ -1,8 +1,14 @@
-// CADASTRO DE USUÁRIOS E RESERVAS //
+// CADASTRO DE USUÁRIOS E RESERVAS COM PAGAMENTO PIX //
 
+const crypto = require("crypto");
 const express = require("express");
 const cors = require("cors");
+const QRCode = require("qrcode");
+const { gerarPixCopiaECola } = require("./pix");
+
 const app = express();
+
+// ---------- CORS ----------
 
 // Sites que podem chamar esta API pelo navegador.
 // Em produção, defina ORIGENS_PERMITIDAS (separadas por vírgula).
@@ -17,13 +23,83 @@ app.use(cors({
     if (!origin || origensPermitidas.includes(origin)) return callback(null, true);
     callback(null, false);
   },
-  methods: ["GET", "POST", "DELETE"]
+  methods: ["GET", "POST", "DELETE", "PATCH"]
 }));
+
 app.use(express.json());
 
-// ---------- USUÁRIOS ----------
+// ---------- CONFIGURAÇÃO ----------
 
-// Usuários cadastrados no sistema (em memória: some ao reiniciar o servidor)
+const PRECO_DIARIA = Number(process.env.PRECO_DIARIA || 1500);
+const PRAZO_PAGAMENTO_MIN = Number(process.env.PRAZO_PAGAMENTO_MIN || 30);
+const ADMIN_CHAVE = process.env.ADMIN_CHAVE || "";
+const pixConfigurado = Boolean(process.env.PIX_CHAVE && process.env.PIX_NOME && process.env.PIX_CIDADE);
+
+if (!(PRECO_DIARIA > 0) || !(PRAZO_PAGAMENTO_MIN > 0)) {
+  console.error("PRECO_DIARIA e PRAZO_PAGAMENTO_MIN precisam ser números maiores que zero.");
+  process.exit(1);
+}
+if (!pixConfigurado) {
+  console.log("Pagamento Pix desativado (defina PIX_CHAVE, PIX_NOME e PIX_CIDADE). Reservas serão recusadas.");
+}
+if (!ADMIN_CHAVE) {
+  console.log("Área administrativa desativada (defina ADMIN_CHAVE).");
+}
+
+// ---------- ÁREA ADMINISTRATIVA (chave no cabeçalho x-admin-key) ----------
+
+function exigirAdmin(req, res, next) {
+  if (!ADMIN_CHAVE) {
+    return res.status(503).json({ erro: "Área administrativa desativada (defina ADMIN_CHAVE)." });
+  }
+  const enviada = Buffer.from(String(req.get("x-admin-key") || ""));
+  const esperada = Buffer.from(ADMIN_CHAVE);
+  if (enviada.length !== esperada.length || !crypto.timingSafeEqual(enviada, esperada)) {
+    return res.status(401).json({ erro: "Não autorizado." });
+  }
+  next();
+}
+
+// ---------- AVISO DE NOVA RESERVA POR WHATSAPP (CallMeBot) ----------
+
+const whatsappConfigurado = Boolean(process.env.WHATSAPP_FONE && process.env.WHATSAPP_APIKEY);
+
+if (!whatsappConfigurado) {
+  console.log("Aviso por WhatsApp desativado (defina WHATSAPP_FONE e WHATSAPP_APIKEY).");
+}
+
+// Envia em segundo plano: se o WhatsApp falhar, a reserva continua valendo.
+function avisarWhatsApp(reserva) {
+  if (!whatsappConfigurado) return;
+
+  const dataBR = reserva.data.split("-").reverse().join("/");
+  const texto =
+    `*Nova reserva AGUARDANDO PAGAMENTO - Nino Clube*\n` +
+    `Espaço: ${reserva.espaco}\n` +
+    `Data: ${dataBR}\n` +
+    `Valor: R$ ${reserva.valor.toFixed(2).replace(".", ",")}\n` +
+    `Nome: ${String(reserva.nome).slice(0, 80)}\n` +
+    `Telefone: ${String(reserva.telefone).slice(0, 30)}\n` +
+    `Código: ${reserva.id}`;
+
+  const params = new URLSearchParams({
+    phone: process.env.WHATSAPP_FONE,
+    text: texto,
+    apikey: process.env.WHATSAPP_APIKEY
+  });
+
+  fetch("https://api.callmebot.com/whatsapp.php?" + params.toString())
+    .then(resp => {
+      if (resp.ok) console.log(`WhatsApp de aviso enviado (reserva ${reserva.id}).`);
+      else console.error(`Falha no aviso por WhatsApp: status ${resp.status}.`);
+    })
+    .catch(err => console.error("Falha no aviso por WhatsApp:", err.message));
+}
+
+// ---------- USUÁRIOS (somente administrador) ----------
+
+app.use("/usuarios", exigirAdmin);
+
 let usuarios = [
   { id: 1, nome: "Richard Teixeira", email: "richard@gmail.com", telefone: "11987563468", criadoEm: new Date() },
   { id: 2, nome: "Noemy portapilla", email: "noemy@gmail.com", telefone: "11934567896", criadoEm: new Date() },
@@ -94,32 +170,43 @@ function dataValida(texto) {
   return d.getFullYear() === ano && d.getMonth() === mes - 1 && d.getDate() === dia;
 }
 
-// Listar reservas (filtros opcionais: ?espaco=Vila Gilda&data=2026-12-25)
+// "confirmada" | "aguardando_pagamento" | "expirada"
+function situacao(r) {
+  if (r.status === "confirmada") return "confirmada";
+  return new Date(r.expiraEm).getTime() > Date.now() ? "aguardando_pagamento" : "expirada";
+}
+
+function ocupaData(r) {
+  return situacao(r) !== "expirada";
+}
+
+function visaoAdmin(r) {
+  return { ...r, situacao: situacao(r) };
+}
+
+// Público: só espaço e data das reservas que ocupam a agenda (sem nome nem telefone)
 app.get("/reservas", (req, res) => {
-  const { espaco, data } = req.query;
-  let lista = reservas;
-
+  const { espaco } = req.query;
+  let lista = reservas.filter(ocupaData);
   if (espaco) lista = lista.filter(r => r.espaco === espaco);
-  if (data) lista = lista.filter(r => r.data === data);
-
-  res.json(lista);
+  res.json(lista.map(r => ({ espaco: r.espaco, data: r.data })));
 });
 
-// Buscar uma reserva
-app.get("/reservas/:id", (req, res) => {
-  const id = Number(req.params.id);
-  const reserva = reservas.find(r => r.id === id);
+// Público: cria a reserva (aguardando pagamento) e devolve o Pix
+app.post("/reservas", async (req, res) => {
+  if (!pixConfigurado) {
+    return res.status(503).json({ erro: "Pagamento ainda não está configurado. Tente mais tarde." });
+  }
 
-  if (!reserva) return res.status(404).json({ erro: "Reserva não encontrada." });
-  res.json(reserva);
-});
-
-// Criar reserva
-app.post("/reservas", (req, res) => {
   const { nome, telefone, espaco, data } = req.body || {};
 
-  if (!nome || !telefone || !espaco || !data) {
+  if (typeof nome !== "string" || typeof telefone !== "string" ||
+      typeof espaco !== "string" || typeof data !== "string" ||
+      !nome.trim() || !telefone.trim() || !espaco || !data) {
     return res.status(400).json({ erro: "nome, telefone, espaco e data são obrigatórios." });
+  }
+  if (nome.length > 80 || telefone.length > 30) {
+    return res.status(400).json({ erro: "Nome ou telefone grande demais." });
   }
   if (!ESPACOS.includes(espaco)) {
     return res.status(400).json({ erro: `Espaço inválido. Use: ${ESPACOS.join(" ou ")}.` });
@@ -130,7 +217,7 @@ app.post("/reservas", (req, res) => {
   if (data < hojeISO()) {
     return res.status(400).json({ erro: "Não é possível reservar uma data que já passou." });
   }
-  if (reservas.some(r => r.espaco === espaco && r.data === data)) {
+  if (reservas.some(r => r.espaco === espaco && r.data === data && ocupaData(r))) {
     return res.status(409).json({ erro: "Esse espaço já está reservado nessa data." });
   }
 
@@ -140,21 +227,83 @@ app.post("/reservas", (req, res) => {
     telefone: telefone.trim(),
     espaco,
     data,
-    criadoEm: new Date()
+    valor: PRECO_DIARIA,
+    status: "aguardando_pagamento",
+    expiraEm: new Date(Date.now() + PRAZO_PAGAMENTO_MIN * 60 * 1000).toISOString(),
+    criadoEm: new Date().toISOString()
   };
+
+  // Entra na lista antes do "await", para ninguém pegar a mesma data ao mesmo tempo
   reservas.push(reserva);
-  res.status(201).json(reserva);
+
+  try {
+    const pixCopiaECola = gerarPixCopiaECola({
+      chave: process.env.PIX_CHAVE,
+      valor: reserva.valor,
+      nome: process.env.PIX_NOME,
+      cidade: process.env.PIX_CIDADE,
+      txid: `NINO${reserva.id}`
+    });
+    const qrCode = await QRCode.toDataURL(pixCopiaECola, { margin: 1, width: 300 });
+
+    avisarWhatsApp(reserva);
+
+    res.status(201).json({
+      id: reserva.id,
+      espaco: reserva.espaco,
+      data: reserva.data,
+      valor: reserva.valor,
+      status: situacao(reserva),
+      expiraEm: reserva.expiraEm,
+      pixCopiaECola,
+      qrCode
+    });
+  } catch (err) {
+    reservas = reservas.filter(r => r.id !== reserva.id);
+    console.error("Erro ao gerar o Pix:", err.message);
+    res.status(500).json({ erro: "Não foi possível gerar o pagamento. Tente novamente." });
+  }
 });
 
-// Cancelar reserva
-app.delete("/reservas/:id", (req, res) => {
+// ---------- ADMINISTRAÇÃO DE RESERVAS ----------
+
+app.get("/admin/reservas", exigirAdmin, (req, res) => {
+  res.json(reservas.map(visaoAdmin));
+});
+
+// Confirmar depois de ver o dinheiro na conta
+app.patch("/admin/reservas/:id/confirmar", exigirAdmin, (req, res) => {
+  const id = Number(req.params.id);
+  const reserva = reservas.find(r => r.id === id);
+
+  if (!reserva) return res.status(404).json({ erro: "Reserva não encontrada." });
+  if (situacao(reserva) === "confirmada") return res.json(visaoAdmin(reserva));
+
+  // Se já expirou, só reativa se a data ainda estiver livre
+  const conflito = reservas.some(r =>
+    r.id !== reserva.id && r.espaco === reserva.espaco && r.data === reserva.data && ocupaData(r)
+  );
+  if (conflito) {
+    return res.status(409).json({
+      erro: "Essa data já foi ocupada por outra reserva. Devolva o pagamento a este cliente."
+    });
+  }
+
+  reserva.status = "confirmada";
+  reserva.confirmadaEm = new Date().toISOString();
+  res.json(visaoAdmin(reserva));
+});
+
+// Cancelar / remover
+app.delete("/admin/reservas/:id", exigirAdmin, (req, res) => {
   const id = Number(req.params.id);
   const index = reservas.findIndex(r => r.id === id);
 
   if (index === -1) return res.status(404).json({ erro: "Reserva não encontrada." });
 
   reservas.splice(index, 1);
-  res.json({ mensagem: "Reserva cancelada." });
+  res.json({ mensagem: "Reserva removida." });
 });
 
 app.listen(3000, () => console.log("Servidor rodando na porta 3000"));
+
