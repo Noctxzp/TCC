@@ -484,3 +484,62 @@ footer {
 
 .msg-reserva.ok { color: var(--cor-verde-tropical); }
 .msg-reserva.erro { color: #ff5252; }
+
+/* Painel de pagamento Pix */
+.pagamento {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 20px;
+    border: 1px solid rgba(0, 230, 118, 0.4);
+    border-radius: 16px;
+    background: rgba(0, 230, 118, 0.05);
+}
+
+.pagamento[hidden] { display: none; }
+
+.pagamento h3 {
+    font-size: 1.05rem;
+    color: var(--cor-texto-claro);
+}
+
+.pagamento .pag-resumo {
+    font-weight: 700;
+    color: var(--cor-verde-tropical);
+}
+
+.pagamento img {
+    background: #fff;
+    padding: 8px;
+    border-radius: 12px;
+    width: 220px;
+    height: 220px;
+}
+
+.pagamento textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--cor-fundo-profundo);
+    color: var(--cor-texto-mutado);
+    font-size: 0.75rem;
+    resize: none;
+}
+
+.btn-copiar {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 10px;
+    background: var(--cor-azul-logo);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.pagamento .pag-aviso {
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
