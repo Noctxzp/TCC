@@ -91,6 +91,7 @@
             <div class="form-agendamento">
                 <input type="text" id="f-nome" placeholder="Seu nome completo">
                 <input type="tel" id="f-tel" placeholder="Telefone / WhatsApp">
+                <input type="text" id="f-cpf" placeholder="CPF (somente números)" inputmode="numeric" maxlength="14" autocomplete="off">
                 <select id="f-item">
                     <option value="" disabled selected>Selecione o espaço</option>
                     <option value="Chácara Riveira">Chácara Riveira</option>
@@ -245,9 +246,10 @@
             window.solicitarReserva = async function () {
                 const nome = document.getElementById('f-nome').value.trim();
                 const tel  = document.getElementById('f-tel').value.trim();
+                const cpf  = document.getElementById('f-cpf').value.trim();
                 const item = selectItem.value;
 
-                if (!nome || !tel || !item || !selectedDate) {
+                if (!nome || !tel || !cpf || !item || !selectedDate) {
                     mostrarMsg('Preencha todos os campos e selecione uma data no calendário.', 'erro');
                     return;
                 }
@@ -261,7 +263,7 @@
                     const resp = await fetch(API + '/reservas', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ nome: nome, telefone: tel, espaco: item, data: iso(selectedDate) })
+                        body: JSON.stringify({ nome: nome, telefone: tel, cpf: cpf, espaco: item, data: iso(selectedDate) })
                     });
                     const dados = await resp.json();
 
@@ -288,6 +290,7 @@
                         };
                         document.getElementById('f-nome').value = '';
                         document.getElementById('f-tel').value = '';
+                        document.getElementById('f-cpf').value = '';
                         limparDataSelecionada();
                     }
                 } catch (e) {
@@ -302,4 +305,5 @@
     </script>
 </body>
 </html>
+
 
