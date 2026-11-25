@@ -170,6 +170,18 @@ function dataValida(texto) {
   return d.getFullYear() === ano && d.getMonth() === mes - 1 && d.getDate() === dia;
 }
 
+// Valida o CPF (11 dígitos, sem pontuação) pelos dígitos verificadores
+function cpfValido(cpf) {
+  if (!/^\d{11}$/.test(cpf) || /^(\d)\1{10}$/.test(cpf)) return false;
+  const digito = (base) => {
+    let soma = 0;
+    for (let i = 0; i < base.length; i++) soma += Number(base[i]) * (base.length + 1 - i);
+    const resto = (soma * 10) % 11;
+    return resto === 10 ? 0 : resto;
+  };
+  return digito(cpf.slice(0, 9)) === Number(cpf[9]) && digito(cpf.slice(0, 10)) === Number(cpf[10]);
+}
+
 // "confirmada" | "aguardando_pagamento" | "expirada"
 function situacao(r) {
   if (r.status === "confirmada") return "confirmada";
@@ -198,7 +210,7 @@ app.post("/reservas", async (req, res) => {
     return res.status(503).json({ erro: "Pagamento ainda não está configurado. Tente mais tarde." });
   }
 
-  const { nome, telefone, espaco, data } = req.body || {};
+  const { nome, telefone, cpf, espaco, data } = req.body || {};
 
   if (typeof nome !== "string" || typeof telefone !== "string" ||
       typeof espaco !== "string" || typeof data !== "string" ||
@@ -207,6 +219,10 @@ app.post("/reservas", async (req, res) => {
   }
   if (nome.length > 80 || telefone.length > 30) {
     return res.status(400).json({ erro: "Nome ou telefone grande demais." });
+  }
+  const cpfLimpo = String(cpf || "").replace(/\D/g, "");
+  if (!cpfValido(cpfLimpo)) {
+    return res.status(400).json({ erro: "CPF inválido." });
   }
   if (!ESPACOS.includes(espaco)) {
     return res.status(400).json({ erro: `Espaço inválido. Use: ${ESPACOS.join(" ou ")}.` });
@@ -225,6 +241,7 @@ app.post("/reservas", async (req, res) => {
     id: proximaReservaId++,
     nome: nome.trim(),
     telefone: telefone.trim(),
+    cpf: cpfLimpo,
     espaco,
     data,
     valor: PRECO_DIARIA,
@@ -306,4 +323,3 @@ app.delete("/admin/reservas/:id", exigirAdmin, (req, res) => {
 });
 
 app.listen(3000, () => console.log("Servidor rodando na porta 3000"));
-
